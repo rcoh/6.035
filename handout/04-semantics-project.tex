@@ -1,0 +1,315 @@
+\documentstyle[11pt,bnf,6035]{article}
+\begin{document}
+\thispagestyle{empty}
+
+{\bnf
+\gdef\kw#1{{\bnf K[#1]}}
+\gdef\term#1{{\bnf T[#1]}}
+\gdef\nt#1{{\bnf <#1>}}}
+
+\handout{Handout --- Semantic Analysis Project}{\CHECKERASSIGN}
+
+{\bf DUE: \CHECKERDUE}
+
+Extend your compiler to find, report, and recover from semantic
+errors in Decaf programs. Most semantic errors can be checked by
+testing the rules enumerated in the section ``Semantic Rules'' of
+Decaf Spec. These rules are repeated in this handout as well.
+However, you should read Decaf Spec in its entirety to make sure that
+your compiler catches all semantic errors implied by the language
+definition. We have attempted to provide a precise statement of the
+semantic rules. If you feel some semantic rule in the language
+definition may have multiple interpretations, you should work with
+the interpretation that sounds most reasonable to you and clearly
+list your assumptions in your project documentation (you can also
+send email to {\tt 6.035-staff@mit.edu} asking for clarification).
+
+This part of the project includes the following tasks:
+
+\begin{enumerate}
+
+\item Create a high-level intermediate representation (IR) tree. You can do
+this either by instructing ANTLR to create one for you, adding
+actions to your grammar to build a tree, or walking a generic ANTLR
+tree and building a tree on the way. The problem of designing an IR
+will be discussed in the lectures; some hints are given in the final
+section of this handout.
+
+When running in debug mode, your driver should pretty-print the
+constructed IR tree in some easily-readable form suitable for
+debugging.
+
+\item Build symbol tables for the classes.  (A symbol table is an
+environment, i.e. a mapping from identifiers to semantic objects such
+as variable declarations.  Environments are structured hierarchically,
+in parallel with source-level constructs, such as class-bodies,
+method-bodies, loop-bodies, etc.)
+
+\item Perform all semantic checks by traversing the IR and
+accessing the symbol tables. {\bf Note:} the run-time checks are
+not required for this assignment.
+
+\end{enumerate}
+
+
+\subsection*{What to Hand In}
+
+Follow the directions given in project overview handout when writing up
+your project.  Your design documentation should include a description of how
+your IR and symbol table structures are organized, as well as a discussion
+of your design for performing the semantic checks.
+
+Each group will be assigned an athena group and shared space in the course locker.
+Each group must place their completed submission at:\[
+\mbox{/mit/6.035/group/{\bf GROUP}/submit/{\bf GROUP}-semantics.tar.gz}
+\]
+Groups may use:\[
+\mbox{/mit/6.035/group/{\bf GROUP}/}
+\]
+as a place to collaborate and share code.  It is recommended that you use
+revision control and place your repositories in this shared space.
+
+Submitted tarballs should have the following structure:
+{\scriptsize
+\begin{verbatim}
+GROUPNAME-semantics.tar.gz
+|
+`-- GROUPNAME-semantics
+    |
+    |-- AUTHORS            (list of students in your group, one per line)
+    |
+    |-- code
+    |   |
+    |   ...                (full source code, can build by running `ant`)
+    |
+    |-- doc 
+    |   |
+    |   ...                (write-up, described in project overview handout)
+    |   
+    `-- dist 
+        |
+        `-- Compiler.jar   (compiled output, for automated testing)
+\end{verbatim}
+}
+
+You should be able to run
+your compiler from the command line with:
+\begin{verbatim}
+  java -jar dist/Compiler.jar -target inter <filename>
+\end{verbatim}
+The resulting output to the terminal should be a report of all
+errors encountered while compiling the file.  Your compiler should
+give reasonable and specific error messages (with line and column
+numbers and identifier names) for all errors detected. It should
+avoid reporting multiple error messages for the same error. For
+example, if {\tt y} has not been declared in the assignment
+statement ``{\tt x=y+1;}'', the compiler should report only one
+error message for {\tt y}, rather than one error message for {\tt
+y}, another error message for the {\tt +}, and yet another error
+message for the assignment.
+
+After you implement the static semantic checker, your compiler should
+be able to detect and report {\em all} static (i.e., compile-time)
+errors in any input Decaf program, including lexical and syntax errors
+detected by previous phases of the compiler. In addition, your
+compiler should not report any messages for valid Decaf
+programs. However, we do not expect you to avoid reporting spurious
+error messages that get triggered by error recovery.  It is possible
+that your compiler might mistakenly report spurious semantic errors in
+some cases depending on the effectiveness of your parser's syntactic
+error recovery.
+
+As mentioned, your compiler should have a debug mode in which the IR
+and symbol table data structures constructed by your compiler are
+printed in some form.  This can be run from the command line by
+\begin{verbatim}
+  java -jar dist/Compiler.jar -target inter -debug <filename>
+\end{verbatim}
+
+\subsection*{Test Cases}
+
+The test cases provided for this project are in:
+\begin{verbatim}
+  /mit/6.035/provided/semantics/
+\end{verbatim}
+
+Read the comments in the test cases to see what we expect your
+compiler to do.  Points will be awarded based on how well your
+compiler performs on these and hidden tests cases.  Complete
+documentation is also required for full credit.
+
+\subsection*{Grading Script}
+
+As with the previous project, we are providing you with the grading script
+we will use to test your code (except for the write-up).  This script only
+shows you results for the public test cases.
+
+The script can be found on athena in the course locker: 
+\[
+\mbox{/mit/6.035/provided/gradingscripts/p2grader.py}
+\]
+
+The script takes your tarball as the only arg:
+\[
+\mbox{/mit/6.035/provided/gradingscripts/p2grader.py GROUPNAME-parser.tar.gz}
+\]
+
+Or it works on the extracted directory:
+\[
+\mbox{/mit/6.035/provided/gradingscripts/p2grader.py GROUPNAME-parser/}
+\]
+
+Please test your submission against this script.  It may help you debug your
+code and it will help make the grading process go more smoothly.
+
+\input{rules-decaf}
+
+\section*{Implementation Suggestions}
+
+\begin{itemize}
+
+\item
+You will need to declare classes for each of the nodes in your IR.  In
+many places, the hierarchy of IR node classes will resemble the
+language grammar.  For example, a part of your inheritance tree might
+look like this (where indentation represents inheritance):
+
+
+\begin{small}\begin{verbatim}
+abstract class Ir
+abstract class     IrExpression
+abstract class         IrLiteral
+         class             IrIntLiteral
+         class             IrBooleanLiteral
+         class         IrCallExpr
+         class             IrMethodCallExpr
+         class             IrCalloutExpr
+         class         IrBinopExpr
+abstract class     IrStatement
+         class         IrAssignStmt
+         class         IrPlusAssignStmt
+         class         IrBreakStmt
+         class         IrContinueStmt
+         class         IrIfStmt
+         class         IrForStmt
+         class         IrReturnStmt
+         class         IrInvokeStmt
+         class         IrBlock
+         class     IrClassDecl
+abstract class     IrMemberDecl
+         class         IrMethodDecl
+         class         IrFieldDecl
+         .
+         .
+         .
+         class     IrVarDecl
+         class     IrType
+\end{verbatim}\end{small}
+
+Classes such as these implement the {\it abstract syntax tree} of
+the input program.  In its simplest form, each class is simply a tuple
+of its subtrees, for example:
+
+\begin{small}\begin{verbatim}
+public class IrBinopExpr extends IrExpression
+{
+    private final int          operator;                      |
+    private final IrExpression lhs;                           +
+    private final IrExpression rhs;                          / \
+}                                                         lhs   rhs
+\end{verbatim}\end{small}
+
+\noindent or:
+
+\begin{small}\begin{verbatim}
+public class IrAssignStmt extends IrStatement
+{                                                             :=
+    private final IrLocation   lhs;                          /  \
+    private final IrExpression rhs;                       lhs    rhs
+}
+\end{verbatim}\end{small}
+
+In addition, you'll need to define classes for the semantic entities
+of the program, which represent abstract properties (e.g. expression
+types, method signatures, class descriptors, etc.) and to establish
+the correspondences between them.  Some examples: every expression has
+a type; every variable declaration introduces a variable; every block
+defines a scope.  Many of these properties are derived by recursive
+traversals over the tree.
+
+As far as possible, you should try to make instances of the the symbol
+classes {\it canonical}, so that they may be compared using reference
+equality.  You are strongly advised to design these classes with care,
+employing good software-engineering practice and documenting them, as
+you will be living with them for the next few months!
+
+\item
+All error messages should be accompanied by the filename, line and
+column number of the token most relevant to the error message (use
+your judgement here).  This means that, when building your
+abstract-syntax tree (or AST), you must ensure that each IR node
+contains sufficient information for you to determine its line number
+at some later time.
+
+% (Some industrial compilers, e.g. the Jikes compiler for Java,
+% associates with each IR node the {\it start} and {\it end} character
+% positions of the first and last tokens included in that construct,
+% allowing its error messages to report exactly which part of a source
+% line contains an error.  This can also be done easily with the JavaCUP
+% framework, which exposes the left and right character positions of
+% each grammar symbol {\it n} in the variables {\tt left} and {\tt
+% right}.)
+
+It is {\it not} appropriate to throw an exception when encountering an
+error in the input: doing so would lead to a design in which at most
+one error message is reported for each run of the compiler.  A good
+front-end saves the user time by reporting multiple errors before
+stopping, allowing the programmer to make several corrections before
+having to restart compilation.
+
+\item
+Semantic checking should be done {\bf top-down}. While the
+type-checking component of semantic checking can be done in
+bottom-up fashion, other kinds of checks (for example, detecting
+uses of undefined variables) can not.
+
+There are two ways of achieving this. The first is to make use of
+parser actions {\it in the middle of productions}. This approach may
+require less code but can be more complex, because more work needs
+to be done directly within the ANTLR infrastructure.
+
+A cleaner approach is to invoke your semantic checker on a complete
+AST after parsing has finished.  The pseudocode for {\tt block} in
+this approach would resemble this:
+
+\begin{small}\begin{verbatim}
+   void checkBlock(EnvStack envs, Block b) {
+       envs.push(new Env());
+       foreach s in b.statements
+           checkStatement(envs, s);
+       envs.pop();
+   }
+\end{verbatim}\end{small}
+
+In this pseudocode, a new environment is created and pushed on the
+environment stack, the body of the block is then checked in the
+context of this environment stack, and then the new environment is
+discarded when the end of the block is reached.
+
+The semantic check can thus be expressed as a {\it visitor} (which
+should be familiar from {\it Design Patterns} or 6.170) over the
+AST.  (Since code generation, certain optimizations, and
+pretty-printing can also be naturally expressed as visitors, we
+recommend this approach for a cleaner implementation.)
+
+\item
+The treatment of negative integer literals requires some care. Recall
+from the previous handout that negative integer literals are in fact
+two separate tokens: the positive integer literal and a preceding
+`{\tt -}'.  Whenever your top-down semantic checker finds a unary
+minus operator, it should check if its operand is a positive integer
+literal, and if so, replace the subtree (both nodes) by a single,
+negative integer literal.
+
+\end{itemize}
+\end{document}

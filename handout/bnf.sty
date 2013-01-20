@@ -1,0 +1,129 @@
+%
+% Style file for writing context free grammars.
+%
+% Macros available in grammar mode:
+%
+%       ->              Expands to \rightarrow
+%       *>              Expands to \Rightarrow (for derivations)
+%       |               Expands to "|".  Use only at beginning of line.
+%       \continue       Just indents to right spot.  Use only at bol.
+%       !               Like |, but for use within a line.
+%       K[foo]          Prints foo as a keyword.
+%       T[foo]          Prints foo as a terminal (in typewriter font).
+%       G[foo]          Prints {foo}
+%       O[foo]          Prints [foo] (optional foo)
+%       L[foo][sep]     Prints foo+sep (represents list of foo with separator)
+%       R[foo]          Prints foo*
+%       \[              Prints [
+%       \]              Prints ]
+%
+% Can get inline use of these macros by saying {\bnf blah blah}
+%
+% Save original defintions for characters.
+\let\bnf@lt=<
+\let\bnf@us=_
+\let\bnf@dash=-
+\let\bnf@star=*
+\let\bnf@bar=|
+\let\bnf@bang=!
+\let\bnf@k=K
+\let\bnf@t=T
+\let\bnf@g=G
+\let\bnf@o=O
+\let\bnf@l=L
+\let\bnf@r=R
+\let\bnf@lbracket=[
+\let\bnf@rbracket=]
+%
+% The macros
+\def\bnf@goesto{&$\rightarrow$&}
+\def\bnf@derives{&$\Rightarrow$&}
+\def\bnf@andalso{&$|$&}
+\def\bnf@continue{&&}
+\def\bnf@alternative{$|$ }
+\def\bnf@kw#1{{\bf #1}}
+\def\bnf@term#1{{\tt #1}}
+\def\bnf@nonterm#1{{\rm $\left< \mbox{#1} \right>$}}
+%
+% Struts added to group and optional to make meta-brackets larger
+%  8/26/91 -- Debbie Hwang
+%
+\def\bnf@group#1{$\left\{ \mbox{\rule[-1ex]{0ex}{3ex}#1} \right\}$}
+\def\bnf@optional#1{$\left[ \mbox{\rule[-1ex]{0ex}{3ex}#1} \right]$}
+\def\bnf@list#1#2{$\mbox{#1}^{+}$#2}
+\def\bnf@multiple#1{$\mbox{#1}^{\ast}$}
+%
+\def\bnf@eatgt>{}
+%
+% The environment
+{\relax
+\gdef\bnf@activate{%
+\catcode`<=\active%
+\catcode`_=\active%
+\catcode`-=\active%
+\catcode`*=\active%
+\catcode`|=\active%
+\catcode`!=\active%
+\catcode`K=\active%
+\catcode`T=\active%
+\catcode`G=\active%
+\catcode`O=\active%
+\catcode`L=\active%
+\catcode`R=\active%
+\catcode`[=1%
+\catcode`]=2%
+}
+\bnf@activate
+\gdef\bnf@deactivate{% Turn all special chars back except for underscore
+\let<=\bnf@lt%
+\let-=\bnf@dash%
+\let*=\bnf@star%
+\let|=\bnf@bar%
+\let!=\bnf@bang%
+\letK=\bnf@k%
+\letT=\bnf@t%
+\letG=\bnf@g%
+\letO=\bnf@o%
+\letL=\bnf@l%
+\letR=\bnf@r%
+}
+\gdef\bnf@define{%
+\def<##1>{{\bnf@deactivate\bnf@nonterm{##1}}}%
+\def_{\_}%
+\def-{\@ifnextchar>{\bnf@goesto\bnf@eatgt}{\bnf@dash}}%
+\def*{\@ifnextchar>{\bnf@derives\bnf@eatgt}{\bnf@star}}%
+\def|{\bnf@andalso}%
+\def!{\bnf@alternative}%
+\defK##1{{\bnf@deactivate\bnf@kw{##1}}}%
+\defT##1{{\bnf@deactivate\bnf@term{##1}}}%
+\defG##1{\bnf@group{##1}}%
+\defO##1{\bnf@optional{##1}}%
+\defL##1##2{\bnf@list{##1}{##2}}%
+\defR##1{\bnf@multiple{##1}}%
+\def\continue{\bnf@continue}%
+\def\[{\bnf@lbracket}%
+\def\]{\bnf@rbracket}%
+\def\lbracket{\bnf@lbracket}%
+\def\rbracket{\bnf@rbracket}%
+}}
+%
+\newenvironment{bnfgrammar}{\bgroup
+\bnf@activate
+\bnf@define
+\obeycr
+\footnotesize
+\begin{tabular}{rll}
+}{\end{tabular}\restorecr\egroup}
+
+\newenvironment{numberedbnfgrammar}{\bgroup
+\bnf@activate
+\bnf@define
+\obeycr
+\footnotesize
+\begin{tabular}{rrll}
+}{\end{tabular}\restorecr\egroup}
+%
+\def\bnf{\bnf@activate\bnf@define\normalsize}
+
+
+

@@ -1,0 +1,406 @@
+\documentstyle[11pt,6035]{article}
+
+\begin{document}
+
+\handout{Handout --- Scanner-Parser Project}{\PARSERASSIGN}
+
+{\bf DUE: \PARSERDUE}
+
+This project consists of two segments: lexical analysis (scanning) and
+syntactic analysis (parsing).
+
+\section*{Preliminaries}
+In this section we will describe the infrastructure that is provided
+for the project.  You are encouraged to use it, but you may also
+choose to ignore it and design your infrastructure from scratch.  The
+skeleton is located in {\tt /mit/6.035/provided/skeleton}.
+
+\subsection*{Provided Infrastructure}
+A skeleton compiler infrastructure has been provided that includes a
+typical compiler directory organization, the ANTLR parser and
+scanner generator, and an Apache Ant build system. The Java package
+name for the sources provided is {\tt decaf}.
+
+The directory structure and the provided files are as follows:
+
+{\scriptsize
+\begin{verbatim}
+.
+|-- bin
+|-- build.xml
+|-- lib
+|   |
+|   `-- antlr.jar
+`-- src
+    |
+    |-- decaf
+    |   |
+    |   |-- Lexer.g
+    |   |-- Parser.g
+    |   `-- Main.java
+    `-- java6035
+        |
+        `-- tools
+            |
+            `-- CLI
+                |
+                `-- CLI.java
+\end{verbatim}
+}
+
+The {\tt lib} directory includes libraries that are needed during a {\it
+run} of your compiler; right now it contains the ANTLR tool. The {\tt
+bin} directory contains the tools (executables) needed to {\it compile} your
+compiler. However, since ANTLR uses the same binary as a tool and as
+a library, and we already included it in the {\it lib} directory,
+{\it bin} director is empty. {\tt build.xml} is the ant build file
+for the infrastructure. The {\it src} directory contains all your
+source code for the compiler. {\tt src/decaf/Parser.g} is a skeleton
+parser grammar and {\tt src/decaf/Lexer.g} is a skeleton scanner
+grammar. {\tt src/decaf/Main.java} is the skeleton driver and {\tt
+src/java6035/tools/CLI/CLI.java} is the command-line interface
+library.
+
+To access and build the provided infrastructure, you must add the
+following lockers to your file system.
+\begin{verbatim}
+  add -f java
+  add -f git
+  add -f eclipse-sdk
+\end{verbatim}
+The eclipse-sdk locker is optional and it adds the eclipse IDE.  No
+changes to your {\tt \$CLASSPATH} variable are required, but due to
+an interaction between {\tt sipb} and {\tt java\_v1.6.0\_18}, we
+recommend that you set an environment variable {\tt JAVA\_HOME} to
+{\tt /afs/athena.mit.edu/software/java\_v1.6.0\_18/}; all the
+classes and jar files required for compilation are included by the
+Ant build file (see next Section).
+
+\subsection*{Ant Build System}
+
+Please review the Ant build file, {\tt build.xml}, that is
+provided. For more information on Ant, please visit:
+\begin{verbatim}
+  http://ant.apache.org/
+\end{verbatim}
+To build the system, execute {\tt ant} from the root directory of the system.
+
+The build file includes tasks for running ANTLR on your scanner and parser
+grammars, compiling the sources, packaging the compiler into a jar file, and
+cleaning the infrastructure.  The default rule is for complete compilation and
+jar creation. The build file creates three directories during compilation:
+{\tt classes}, {\tt java}, and {\tt dist}.  The {\tt classes} directory
+contains all {\tt .class} files created during compilation.  The {\tt java}
+directory contains all the generated sources for the compiler (from scanner and
+parser grammars). The {\tt dist} directory contains the jar archive file for
+the compiler and any other runtime libraries that are necessary for running
+the compiler. A clean will delete these three directories. If you are using
+revision control, you should not add these directories to your repository.
+
+\subsection*{Getting Started}
+
+A good place to start would be to create a copy of the provided skeleton
+and create a git repository to track your changes.  This can be accomplished
+with the following commands on athena:
+\begin{verbatim}
+# initial setup:
+add -f java git
+cp -r /mit/6.035/provided/skeleton ~/Private/6.035
+cd ~/Private/6.035
+git init
+
+# save all changes into git repository:
+git add .
+git commit -m "Initial import"
+
+# build:
+ant
+
+# run scanner:
+java -jar dist/Compiler.jar -target scan -debug /mit/6.035/provided/scanner/char1
+
+# run parser:
+java -jar dist/Compiler.jar -target parse -debug /mit/6.035/provided/parser/legal-01
+\end{verbatim}
+
+\section*{Scanner}
+
+Your scanner must be able to identify tokens of the Decaf language,
+the simple imperative language we will be compiling in 6.035.  The
+language is described in the Decaf Language Handout.  Your scanner should note
+illegal characters, missing quotation marks, and other lexical
+errors with reasonable error messages.  The scanner should find as
+many lexical errors as possible, and should be able to continue
+scanning after errors are found.  The scanner should also filter out
+comments and whitespace not in string and character literals.
+
+You will not be writing the scanner from scratch. Instead, you will
+generate the scanner using ANTLR. This program reads in an input
+specification of regular expression-like syntax (grammar) and
+creates a Java program to scan the specified language.  More
+information on ANTLR (including the manual and examples) can be on
+the web at:
+\begin{verbatim}
+  http://antlr2.org/doc/index.html
+  http://www.antlr.org/wiki/display/CS652/CS652+Home
+  \end{verbatim}
+To get you started, we have provided a template in
+\begin{verbatim}
+  /mit/6.035/provided/skeleton/src/decaf/Lexer.g
+\end{verbatim}
+If you chose to work from this skeleton, you must complete the
+existing ANTLR rules and add new ones for your scanner.
+
+ANTLR generated scanners throw exceptions when they encounter an
+error. Each exception includes a text of a potential error message,
+and the provided skeleton driver prints them out. You are free to
+use use the messages provided by ANTLR, if you have verified that
+they make sense and are specific enough.
+
+ANTLR is invoked by the {\it antlr} task of the Ant build file.  The
+generated files, {\tt DecafLexer.java}, etc, are placed in the {\tt
+java/decaf} directory by the task.  Note that ANTLR merely generates
+a Java source file for a scanner class; it does not compile or even
+syntactically check its output. Thus, typos or syntactic errors in
+the scanner grammar file will be propagated to the output.
+
+An ANTLR generated scanner produces a string of tokens as its
+output. Each token has the following fields:
+
+\begin{tabular}{ll}
+   \texttt{type}  & the integer type of the token\\
+   \texttt{text}  & the text of the token\\
+   \texttt{line}  & the line in which the token appears\\
+   \texttt{col}   & the column in which the token appears\\
+\end{tabular}
+
+Every distinguishable terminal in your Decaf grammar will have an
+automatically generated unique integer associated with it so that
+the parser can differentiate them.  These values are created from
+your scanner grammar and are stored in the {\tt *TokenTypes.java}
+file created by ANTLR.
+
+\subsection*{Parser}
+
+Your parser must be able to correctly parse programs that conform to
+the grammar of the Decaf language.  Any program that does not conform
+to the language grammar must be flagged with at least one error
+message.
+
+As mentioned, we will be using the ANTLR LL(k) parser generator, same
+tool as for the Scanner. You will need to transform the reference grammar
+in Decaf Language Handout into a grammar expressed in the ANTLR grammar
+syntax. Be careful with checking your spelling, as ANTLR does match rule
+uses to declarations.
+
+Your parser does not have to, and should not, recognize
+context-sensitive errors \eg using an integer identifier where an
+array identifier is expected.  Such errors will be detected by the
+static semantic checker.  {\it Do not} try to detect
+context-sensitive errors in your parser.  However, you might need to
+create syntactic actions in your parser to check for some
+context-free errors.
+
+You might want to look at Section 3 in the ``Tiger'' book, or
+Sections 4.3 and 4.8 in the Dragon book for tips on getting rid of
+shift/reduce and reduce/reduce conflicts from your grammar.  You can
+tell ANTLR to print out the parse states (useful for resolving
+conflicts) by adding {\tt trace="yes"} to the ANTLR target (please
+see the build file).
+
+\newpage
+
+\subsection*{What to Hand In}
+
+Projects should be submitted electronically through stellar.  You should
+submit a gzipped tar file named {\tt LASTNAME-parser.tar.gz}, where LASTNAME
+is replaced with your last name.  The contents of this file should follow
+the following structure:
+
+{\scriptsize
+\begin{verbatim}
+LASTNAME-parser.tar.gz
+|
+`-- LASTNAME-parser
+    |
+    |-- code
+    |   |
+    |   ...                (full source code, can build by running `ant`)
+    |
+    |-- doc 
+    |   |
+    |   ...                (write-up, described in project overview handout)
+    |   
+    `-- dist 
+        |
+        `-- Compiler.jar   (compiled output, for automated testing)
+\end{verbatim}
+}
+
+It is expected that most (or all) students will use Java for their project, and
+thus should adhere to the above format.  If you elect to use a language other
+than Java, you must provide a wrapper script ./run.sh (runnable with bash)
+in the main directory that calls your code and accepts the same arguments
+described in the project overview handout.  Any additional dependencies
+and instructions to build your code should be included in the documentation.
+
+\subsubsection*{Scanner output format}
+
+When {\tt -target scan} is specified, the output of your compiler
+should be a scanned listing of the program with one row for each
+token in the input. Each line will contain the following
+information: the line number (starting at 1) on which the token
+appears, the type of the token (if applicable), and the token's
+text. Please print only the following strings as token types (as
+applicable): {\tt CHARLITERAL}, {\tt INTLITERAL}, {\tt
+BOOLEANLITERAL}, {\tt STRINGLITERAL} and {\tt IDENTIFIER}.
+
+For {\tt STRINGLITERAL} and {\tt CHARLITERAL}, the text of the token
+should be the text, as appears in the original program, including
+the quotes and any escaped characters.
+
+Each error message should be printed on its own line, {\it before}
+the erroneous token, if any.  Such messages should include the file
+name, line and column number on which the erroneous token appears.
+
+Here is an example table corresponding to {\tt print("Hello,
+  World!");}:
+
+\begin{center}
+\begin{tabular}{l}
+\texttt{1 IDENTIFIER print} \\
+\texttt{1 (}\\
+\texttt{1 STRINGLITERAL "Hello, World!"} \\
+\texttt{1 )} \\
+\texttt{1 ;}
+\end{tabular}
+\end{center}
+
+You are given both a set of test files on which to test your scanner
+and the expected output for these files (see next Section).  {\bf
+The TA requests that the output of your scanner matches the provided
+output exactly on all files without errors} (successful exit status
+of the {\tt diff} command). The TA would like to automate the
+grading process as much as possible.
+
+\subsubsection*{Parser output format}
+When {\tt -target parse} is specified, any syntactically incorrect
+program should be flagged with at least one error message, and the
+program should exit with a non-zero value (see {\tt System.exit()}).
+Multiple error messages may be printed for programs with multiple
+syntax errors that are amenable to error recovery. Given a
+syntactically valid program, your parser should produce no output,
+and exit with the value zero (success). The exact format for parse
+error messages is not stipulated.
+
+\section*{Provided Test Cases and Expected Output}
+
+The provided test cases for scanning and parsing can be found in:
+
+\begin{verbatim}
+/mit/6.035/provided/scanner
+/mit/6.035/provided/parser
+\end{verbatim}
+
+The expected output for each scanner test can be found in:
+\begin{verbatim}
+/mit/6.035/provided/scanner/output
+\end{verbatim}
+
+We will test your scanner/parser on these and a set of hidden tests.
+You will receive points depending on how many of these tests are
+passed successfully.  In order to receive full credit, we also expect
+you to complete the written portion of the project as described in the
+Project Overview Handout.
+
+\newpage
+\appendix
+\section{Why we defer integer range checking until the next project}
+
+When considering the problem of checking the legality of the input
+program, there is no fundamental separation between the
+responsibilities of the scanner, the parser and the semantic checker.
+Often, the compiler designer has the choice of checking a certain
+constraint in a particular phase, or even of dividing the checking
+across multiple phases.  However, for pragmatic reasons, we have had
+to divide the complete scan/parse/check unit into two parts simply to
+fit the course schedule better.
+
+As a result, we will have to mandate certain details about your
+implementations that are not necessarily issues of correctness.  For
+example, one cannot completely check whether integer literals are
+within range without constructing a parse tree.
+
+Consider the input:
+
+\begin{verbatim}
+    x+-2147483648
+\end{verbatim}
+
+This corresponds to a parse tree of:
+
+\begin{verbatim}
+    +
+   / \
+  x   -
+      |
+  INT(2147483648)
+\end{verbatim}
+
+We cannot confirm in the scanner that the integer literal -2147483648
+is within range, since it is not a single token.  Nor can we do this
+within the parser, since at this stage we are not constructing an
+abstract syntax tree.  Only in the semantic checking phase, when we
+have an AST, are we able to perform this check, since it requires the
+unary minus operator to modify its argument if it is an integer
+literal, as follows:
+
+\begin{verbatim}
+    +                         +
+   / \                       / \
+  x   -           ---->     x   INT(-2147483648)
+      |
+  INT(2147483648)
+\end{verbatim}
+
+Of course, if the integer token was clearly out of range
+(e.g. 99999999999) the scanner could have rejected it, but this check
+is not required since the semantic phase will need to perform it later
+anyway.
+
+Therefore, rather than do some checking earlier and some later, we
+have decided that ALL integer range checking must be deferred until
+the semantic phase.  So, your scanner/parser must not try to interpret
+the strings of decimal or hex digits in an integer token; the token
+must simply retain the string until the semantic phase.
+
+When printing out the token table from your scanner, do not print the
+value of an {\tt INTLITERAL} token in decimal.  Print it exactly as
+it appears in the source program, whether decimal or hex.
+
+%% \section{Eclipse}
+
+%% This section includes some brief instructions that will get you
+%% started with the Eclipse IDE. Eclipse is located in the {\tt
+%%   eclipse-sdk} locker and can be run by issuing {\tt eclipse}.
+
+%% To create a project from a local CVS repository on Athena,
+
+%% To create a project from a remote CVS repository, Select ``File
+%% $\Rightarrow$ New $\Rightarrow$ Project'' and select ``CVS
+%% $\Rightarrow$ Checkout Projects from CVS'' and click ``Next''.  At the
+%% next screen, enter {\tt ant.mit.edu} for ``Host:'', the absolute path
+%% for you CVS repository for ``Repository path:, your username/password
+%% for ``User:'' and ``Password'', and ``extssh'' for ``Connection
+%% type:''.  Click ''Next''.
+
+%% To use your build file in Eclipse, create a new Ant Builder for the
+%% project under the ``Project $\Rightarrow$ Properties'' menu,
+%% ``Builders'' tab. Select ``New...'' and create a new builder of type
+%% ``Ant Build''.  In the ``Main'' tab, select your build file
+%% (build.xml) and set the base directory to the base directory of your
+%% project.  You will want to enable resource refreshing under the
+%% ``Refresh'' tab. In the ``Targets'', set target of each operation as
+%% you see fit given the build file.
+
+\end{document}

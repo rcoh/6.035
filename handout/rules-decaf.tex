@@ -1,0 +1,60 @@
+
+% rules-decaf.tex -- shared between decaf spec and the semantic assignment.
+
+\subsection*{Semantic Rules}
+
+These rules place additional constraints on the set of valid
+Decaf programs besides the constraints implied by the
+grammar.  A program that is grammatically well-formed and does not
+violate any of the following rules is called a \textit{legal} program.
+A robust compiler will explicitly check each of these rules, and will
+generate an error message describing each violation it is able to
+find.  A robust compiler will generate at least one error message for
+each illegal program, but will generate no errors for a legal program.
+
+\begin{enumerate}
+\item No identifier is declared twice in the same scope.
+\item No identifier is used before it is declared.
+\item The program contains a definition for a method called 
+      \kw{main} that has no parameters (note that since execution starts at
+       method \kw{main}, any methods defined after main will never be 
+      executed).
+\item The {\bnf <int_literal>} in an array declaration must be greater
+      than 0.
+\item The number and types of arguments in a method call must be the same
+      as the number and types of the formals, i.e., the signatures
+must be identical.
+\item If a method call is used as an expression, the method must
+      return a result.
+\item A \kw{return} statement must not have a return value unless it appears
+      in the body of a method that is declared to return a value.
+\item The expression in a \kw{return} statement must have the same type as
+      the declared result type of  the enclosing method definition.
+%\item If a method returns a non-void type, all exits from the method must
+%      explicitly return an expression of return type.
+\item An {\bnf <id>} used as a {\bnf <location>} must name a declared 
+      local/global variable or formal parameter.
+\item For all locations of the form {\bnf <id>T[\[]<expr>T[\]]}
+      \begin{enumerate}
+      \item {\bnf <id>} must be an 
+            \kw{array} variable, and 
+      \item the type of {\bnf <expr>} must be \kw{int}.
+      \end{enumerate}
+\item The {\bnf <expr>} in an \kw{if} statement must have type
+      \kw{boolean}.
+\item The operands of {\bnf <arith_op>}s and {\bnf <rel_op>}s must have type
+      \kw{int}.
+\item The operands of {\bnf <eq_op>}s must have the same type, either
+      \kw{int} or \kw{boolean}.
+\item The operands of {\bnf <cond_op>}s and the operand of logical not
+      (\kw{!}) must have type \kw{boolean}.
+\item The {\bnf <location>} and the {\bnf <expr>} in an assignment, 
+{\bnf <location>~T[=]~<expr>}, must have the same type.
+\item The {\bnf <location>} and the {\bnf <expr>} in an
+incrementing/decrementing assignment,
+{\bnf <location>~T[+=]~<expr>} and {\bnf <location>~T[-=]~<expr>}, must be of type \kw{int}.
+\item The initial {\bnf <expr>} and the ending {\bnf <expr>} of
+  \kw{for} must have type \kw{int}.
+\item All \kw{break} and \kw{continue} statements must be contained within 
+      the body of a \kw{for}.
+\end{enumerate}

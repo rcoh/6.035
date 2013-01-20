@@ -1,0 +1,188 @@
+% 6035.sty
+%
+% From Rishiyur S. Nikhil, Feb 3, 1990
+% New homework header -- Deborah Hwang, November, 1991
+% New homework header -- Bob Gruber, September, 1992
+% Cleaned up some stuff, added handout declarations
+%   Wilson Hsieh, September 1993
+% New quiz header -- Michal Karczmarek, September 2007
+%
+
+%% to allow latex2html hyperization
+%\input html.sty
+
+\input{config}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The stuff below should not have to change from year to year.   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% use postscript fonts
+% added, D Evans September 1993
+% removed, deberg, 1999.  doesn't seem to work anymore.
+%\include{newcen}
+
+% HANDOUT Header
+%
+% Usage:
+% \handout{name}{date}
+\newcommand{\handout}[2]{\begin{center}
+{\bf Massachusetts Institute of Technology} \\
+{\bf Department of Electrical Engineering and Computer Science}
+\end{center}
+\vspace*{\medskipamount}
+\hbox to\textwidth{\hbox to 0in{6.035, \CURRENTTERM\hss}\hfill {\large #1} \hfill \hbox to 0in{\hss #2}}
+\hdivider\bigskip}
+
+% QUIZ Header
+%
+% Usage:
+% \quiz{quiz name}{time-alloted}{date}
+\newcommand{\quiz}[3]{\begin{center}
+\flushright\begin{tabular}{lp{3in}} Name &  \\ \cline{2-2}
+\end{tabular} \\
+\vspace{0.3in}
+\hbox to\textwidth{\hbox to 0in {6.035 \CURRENTTERM\hss} \hfill{\large #1} \hfill \hbox to 0in{\hss #2}}
+\end{center}
+\hdivider\bigskip}
+
+% HOMEWORK Header
+%
+% Usage:
+% \homework{number}{outdate}{duedate}
+\newcommand{\homework}[3]{\begin{center}
+{\bf Massachusetts Institute of Technology} \\
+{\bf Department of Electrical Engineering and Computer Science}
+\end{center}
+\vspace*{\medskipamount}
+\hbox to\textwidth{\hbox to 0in{
+    \begin{tabular}{l}
+    \\
+    6.035, \CURRENTTERM
+    \end{tabular}
+\hss}\hfill {\large Homework \##1}
+\hfill \hbox to 0in{\hss
+    \begin{tabular}{rl@{}}
+    {\bf Out:}&#2\\
+    {\bf Due:}&#3
+    \end{tabular}
+}}
+\hdivider\bigskip}
+
+
+% HORIZONTAL MARGINS
+% Left margin 1 inch (0 + 1)
+\setlength{\oddsidemargin}{0in}
+% Left margin 1 inch (0 + 1)
+\setlength{\evensidemargin}{0in}
+% Text width 6.5 inch (so right margin 1 inch).
+\setlength{\textwidth}{6.5in}
+% ----------------
+% VERTICAL MARGINS
+% Top margin 0.5 inch (-0.5 + 1)
+\setlength{\topmargin}{-0.5in}
+% Head height 0.25 inch (where page headers go)
+\setlength{\headheight}{0.25in}
+% Head separation 0.25 inch (between header and top line of text)
+\setlength{\headsep}{0.25in}
+% Text height 9 inch (so bottom margin 1 in)
+\setlength{\textheight}{9in}
+% ----------------
+% PARAGRAPH INDENTATION
+\setlength{\parindent}{0in}
+% SPACE BETWEEN PARAGRAPHS
+\setlength{\parskip}{\medskipamount}
+% ----------------
+% STRUTS
+% HORIZONTAL STRUT.  One argument (width).
+\newcommand{\hstrut}[1]{\hspace*{#1}}
+% VERTICAL STRUT. Two arguments (offset from baseline, height).
+\newcommand{\vstrut}[2]{\rule[#1]{0in}{#2}}
+% ----------------
+% HORIZONTAL LINE ACROSS PAGE:
+\newcommand{\hdivider}{\noindent\mbox{}\hrulefill\mbox{}}
+% ----------------
+% EMPTY BOXES OF VARIOUS WIDTHS, FOR INDENTATION
+\newcommand{\hm}{\hspace*{1em}}
+\newcommand{\hmm}{\hspace*{2em}}
+\newcommand{\hmmm}{\hspace*{3em}}
+\newcommand{\hmmmm}{\hspace*{4em}}
+% ----------------
+% VARIOUS CONVENIENT WIDTHS RELATIVE TO THE TEXT WIDTH, FOR BOXES.
+\newlength{\hlessmm}
+\setlength{\hlessmm}{\textwidth}
+\addtolength{\hlessmm}{-2em}
+
+\newlength{\hlessmmmm}
+\setlength{\hlessmmmm}{\textwidth}
+\addtolength{\hlessmmmm}{-4em}
+% ----------------
+% ``TIGHTLIST'' ENVIRONMENT (no para space betwee items, small indent)
+\newenvironment{tightlist}%
+{\begin{list}{$\bullet$}{%
+    \setlength{\topsep}{0in}
+    \setlength{\partopsep}{0in}
+    \setlength{\itemsep}{0in}
+    \setlength{\parsep}{0in}
+    \setlength{\leftmargin}{1.5em}
+    \setlength{\rightmargin}{0in}
+    \setlength{\itemindent}{0in}
+}
+}%
+{\end{list}
+}
+% ----------------
+% ITALICISE WORDS
+\newcommand{\ie}{{\em i.e.,\ \/}}
+\newcommand{\eg}{{\em e.g.,\ \/}}
+\newcommand{\etc}{{\em etc.\/}}
+\newcommand{\via}{{\em via\/}}
+\newcommand{\vs}{{\em vs.\ \/}}
+\newcommand{\Eg}{{\em E.g.,\ \/}}
+\newcommand{\etal}{{\em et.al.\/}}
+% ----------------
+% CODE FONT (e.g. {\cf x := 0}).
+\newcommand{\cf}{\footnotesize\tt}
+% ----------------
+% Emphasis with automatic italic correction.
+% Say {\emp text} to emphasize text.
+% \it@docorrection  - looks at next character and stores it in \it@nextchar
+% \it@addcorrection - add italic correction if \it@nextchar is neither
+%             a period or a comma.
+\def\it@docorrection{\futurelet\it@nextchar\it@addcorrection}
+\def\it@addcorrection{\if.\it@nextchar\else
+\if,\it@nextchar\else\/\fi\fi}
+\def\emp{\aftergroup\it@docorrection\em}
+% -----------------
+% Program inclusion
+%   \includeprogram{fragment-file-name}
+%
+\newskip\pr@programspacewidth
+\newskip\pr@programparskip
+\pr@programspacewidth=.52em\relax
+\pr@programparskip=10pt plus5pt minus5pt
+%
+\def\includeprogram#1{\bgroup
+\def\pr@id{\rm}
+\def\pr@kw{\bf}
+\def\pr@st{\rm}
+\def\pr@lt{\rm}
+\def\pr@pn{\rm}
+\def\pr@cm{\rm}
+\def\pr@sp[##1]{\hskip ##1\pr@programspacewidth}
+\def\pr@ss{\lq\lq}
+\def\pr@se{\rq\rq}
+\def\pr@ls{\lq}
+\def\pr@le{\rq}
+\def\pr@cs{\%}
+\def\pr@ce{}
+\def\pr@header{\parindent=0in\def\ {\hskip\pr@programspacewidth}}
+\def\pr@footer{}
+\def\pr@spacing[##1]{\vskip ##1\pr@programparskip}
+\input{#1}\egroup}
+
+
+\newcommand{\htmlhandoutlink}[2]{#1}
+\newcommand{\pshandoutlink}[2]{#1}

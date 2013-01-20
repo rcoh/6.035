@@ -1,0 +1,438 @@
+\documentstyle[11pt,bnf,6035]{article}
+
+{\bnf
+\gdef\kw#1{{\bnf K[#1]}}
+\gdef\term#1{{\bnf T[#1]}}
+\gdef\nt#1{{\bnf <#1>}}}
+
+\begin{document}
+\handout{Handout --- Decaf Language}{\CLASSONE}
+
+The project for the course is to write a compiler for a language
+called Decaf.  Decaf is a simple imperative language similar to C or
+Pascal.
+
+\section*{Lexical Considerations}
+
+All Decaf keywords are lowercase.  Keywords and
+identifiers are case-sensitive.  For example, \kw{if} is a keyword,
+but {\tt IF} is a variable name; {\tt foo} and {\tt Foo} are two
+different names referring to two distinct variables.
+
+The reserved words are:
+
+
+\kw{boolean break callout class continue else false for
+  if int return true void}
+
+Note that \kw{Program} (see below) is not a keyword, but an identifier
+with a special meaning in certain circumstances.
+
+Comments are started by {\tt //} and are terminated by the end of the
+line.
+
+White space may appear between any lexical tokens.  White space is
+defined as one or more spaces, tabs, line-break
+characters, and comments.
+
+Keywords and identifiers must be separated by white space, or a token
+that is neither a keyword nor an identifier.  For example, {\tt
+thisfortrue} is a single identifier, not three distinct keywords.
+If a sequence begins with an alphabetic character or an underscore,
+then it, and the longest sequence of characters following it forms a
+token.
+
+String literals are composed of {\bnf <char>}s enclosed in double
+quotes.  A character literal consists of a {\bnf <char>} enclosed in
+single quotes.
+
+Numbers in Decaf are 32 bit signed. That is, decimal values between
+-2147483648 and 2147483647.  If a sequence begins with {\tt 0x}, then
+these first two characters and the longest sequence of characters
+drawn from {\tt [0-9a-fA-F]} form a hexadecimal integer literal.  If a
+sequence begins with a decimal digit (but not {\tt 0x}), then the
+longest prefix of decimal digits forms a decimal integer literal.
+Note that range checking is performed later.  A long sequence of
+digits (e.g. 123456789123456789) is still scanned as a single token.
+
+A {\bnf <char>} is any printable ASCII character (ASCII values between
+decimal value 32 and 126, or octal 40 and 176) other than quote
+(\verb+"+), single quote (\verb+'+), or backslash (\verb+\+), plus the
+2-character sequences ``\verb+\"+'' to denote quote, ``\verb+\'+'' to
+denote single quote, ``\verb+\\+'' to denote backslash, ``\verb+\t+'' to
+denote a literal tab, or ``\verb+\n+'' to denote newline.
+
+\newpage
+\section*{Reference Grammar}
+
+Meta-notation:
+
+{\def\x{{\rm $x$}}
+\def\y{{\rm $y$}}
+\begin{center}
+\begin{tabular}{|c|l|} \hline
+\nt{foo}&               means foo is a nonterminal. \\
+\kw{foo}&               (in \kw{bold} font) means that \kw{foo} is a
+                        terminal \\
+&           i.e., a token or a part of a token.\\
+{\bnf O[T[\x]]}&        means zero or one occurrence of \x,
+                        \ie\ \x\ is optional; \\
+&           \hspace*{2em} note that brackets in quotes \term{$'$\[$'$ $'$\]$'$} are terminals.\\
+{\bnf R[\x]}&        means zero or more occurrences of \x. \\
+{\bnf L[\x][T[,]]}&  a comma-separated list of one or more x's.\\
+{\bnf G[\ \ ]}&     large braces are used for grouping;\\
+&           \hspace*{2em} note that braces in quotes \term{$'$\{$'$ $'$\}$'$} are terminals.\\
+{\bnf !}&               separates alternatives. \\ \hline
+\end{tabular}
+\end{center}}
+
+\begin{bnfgrammar}
+<program> -> K[class] K[Program] T[~$'$\{$'$~] R[<field_decl>] R[<method_decl>] T[~$'$\}$'$]
+
+<field_decl> -> <type> L[G[<id> ! <id> T[~$'$\[$'$] <int_literal> T[$'$\]$'$~] ]][T[,]] T[~~;]
+
+<method_decl> -> G[<type> ! K[void]] <id> T[~(~] O[L[G[<type> <id>]][T[,]]] T[~)~] <block>
+
+<block> -> T[$'$\{$'$~] R[<var_decl>]  R[<statement>] T[~$'$\}$'$]
+
+<var_decl> -> <type> L[<id>][T[,]] T[~~;]
+
+<type> -> K[int] ! K[boolean]
+
+<statement> -> <location> <assign_op> <expr> T[~~;]
+             | <method_call> T[~~;]
+             | K[if] T[~(~] <expr> T[~)~] <block> O[K[else] <block>]
+             | K[for] <id> T[~=~] <expr> T[~,~] <expr> <block>
+             | K[return] O[<expr>] T[~~;]
+             | K[break] T[~~;]
+             | K[continue] T[~~;]
+             | <block>
+
+<assign_op> -> T[=]
+             | T[+=]
+	     | T[-=]	
+
+<method_call> -> <method_name> T[~(~] O[L[<expr>][T[,]]] T[~)~]
+        | K[callout] T[~(~] <string_literal> O[T[,] L[ <callout_arg>][T[,]]] T[~)~]
+
+<method_name> -> <id>
+
+<location> -> <id>
+            | <id> T[~$'$\[$'$~] <expr> T[~$'$\]$'$~]
+
+\end{bnfgrammar}
+
+\begin{bnfgrammar}
+<expr> -> <location>
+        | <method_call>
+        | <literal>
+        | <expr> <bin_op> <expr>
+        | T[-] <expr>
+    | T[!] <expr>
+        | T[(~] <expr> T[~)]
+
+<callout_arg> -> <expr> ! <string_literal>
+
+<bin_op> -> <arith_op> ! <rel_op> ! <eq_op> ! <cond_op>
+
+<arith_op> -> T[+] ! T[-] ! T[*] ! T[/] ! T[\%] % ! T[<<] ! T[>>]
+
+<rel_op> -> T[<] ! T[>] ! T[<=] ! T[>=]
+
+<eq_op>   -> T[==] ! T[!=]
+
+<cond_op> -> T[\&\&] ! T[||]
+
+<literal> -> <int_literal> ! <char_literal> ! <bool_literal>
+
+<id> -> <alpha> R[<alpha_num>]
+
+<alpha_num> -> <alpha> ! <digit>
+
+<alpha> -> T[a] ! T[b] ! T[\ldots{}] ! T[z] ! T[A] ! T[B] ! T[\ldots{}] ! T[Z] ! T[\_]
+
+<digit> -> T[0] ! T[1] ! T[2] ! T[\ldots] ! T[9]
+
+<hex_digit> -> <digit> ! T[a] ! T[b] ! T[c] ! T[d] ! T[e] ! T[f] ! T[A] ! T[B] ! T[C] ! T[D] ! T[E] ! T[F]
+
+<int_literal> -> <decimal_literal> ! <hex_literal>
+
+<decimal_literal> -> <digit> R[<digit>]
+
+<hex_literal> -> T[0x] <hex_digit> R[<hex_digit>]
+
+<bool_literal> -> K[true] ! K[false]
+
+<char_literal> -> T['] <char> T[']
+
+<string_literal> -> T["] R[<char>] T["]
+\end{bnfgrammar}
+
+\section*{Semantics}
+\def\arrayint{\kw{array}\term{\[\kw{int}\]}}
+\def\arraybool{\kw{array}\term{\[\kw{bool}\]}}
+\def\arrayT{\kw{array}\term{\[T\]}}
+
+A Decaf program consists of a single class declaration
+for a class called \kw{Program}. The class declaration consists of
+field declarations and method declarations.  Field declarations
+introduce variables that can be accessed globally by all methods in
+the program.  Method declarations introduce functions/procedures.  The
+program must contain a declaration for a method called \kw{main} that
+has no parameters.  Execution of a Decaf program starts
+at method \kw{main}.
+
+\subsection*{Types}
+
+There are two basic types in Decaf --- \kw{int} and
+\kw{boolean}.  In addition, there are arrays of integers (\term{int \[
+$N$ \]}) and arrays of booleans (\term{boolean \[ $N$ \]}).
+
+Arrays may be declared only in the global (class declaration) scope.
+All arrays are one-dimensional and have a compile-time fixed size.
+Arrays are indexed from 0 to $N-1$, where $N > 0$ is the size of the
+array.  The usual bracket notation is used to index arrays.  Since
+arrays have a compile-time fixed size and cannot be declared as
+parameters (or local variables), there is no facility for querying the
+length of an array variable in Decaf.
+
+\subsection*{Scope Rules}
+
+Decaf has simple and quite restrictive scope rules.  All
+identifiers must be defined (textually) before use.  For example:
+
+ \begin{itemize}
+  \item a variable must be declared before it is used.
+  \item a method can be called only by code appearing after its header.
+(Note that recursive methods are allowed.)
+ \end{itemize}
+
+There are at least two valid scopes at any point in a
+Decaf program: the global scope, and the method
+scope.  The global scope consists of names of fields and methods
+introduced in the (single) \kw{Program} class declaration.  The
+method scope consists of names of variables and formal parameters
+introduced in a method declaration.  Additional local scopes exist within
+each \nt{block} in the code; these can come after \kw{if} or \kw{for}
+statements, or inserted anywhere a \nt{statement} is
+legal.  An identifier introduced in a method scope can shadow an
+identifier from the global scope.  Similarly, identifiers introduced
+in local scopes shadow identifiers in less deeply nested scopes, the
+method scope, and the global scope.
+
+Variable names defined in the method scope or a local scope may
+shadow method names in the global scope.  In this case, the
+identifier may only be used as a variable until the variable leaves
+scope.
+
+No identifier may be defined more than once in the same scope.  Thus
+field and method names must all be distinct in the global scope, and
+local variable names and formal parameters names must be distinct in
+each local scope.
+
+\subsection*{Locations}
+
+Decaf has two kinds of locations: local/global scalar
+variables and (global) array elements.  Each location has a type.
+Locations of types \kw{int} and \kw{boolean} contain integer values and
+boolean values, respectively.  Locations of types \term{int \[ $N$ \]}
+and \term{boolean \[ $N$ \]} denote array elements.  Since arrays are
+statically sized in Decaf, arrays may be allocated in the
+static data space of a program and need not be allocated on the heap.
+
+Each location is initialized to a default value when it is declared.
+Integers have a default value of zero, and booleans have a default
+value of \kw{false}.  Local variables must be initialized when the
+declaring scope is entered.  Array elements are initialized when the
+program starts.
+
+\subsection*{Assignment}
+
+Assignment is only permitted for scalar values.  For the types
+\kw{int} and \kw{boolean}, Decaf uses value-copy semantics, and the
+assignment {\bnf <location>~T[=]~<expr>} copies the value resulting
+from the evaluation of {\bnf <expr>} into {\bnf <location>}.  The
+{\bnf <location>~T[+=]~<expr>} assignment increments the value
+stored in {\bnf <location>} by {\bnf <expr>}, and is only valid for
+both {\bnf <location>} and {\bnf <expr>} of type \kw{int}. The
+{\bnf <location>~T[-=]~<expr>} assignment decrements the value
+stored in {\bnf <location>} by {\bnf <expr>}, and is only valid for
+both {\bnf <location>} and {\bnf <expr>} of type \kw{int}.
+
+The {\bnf <location>} and the {\bnf <expr>} in an assignment must
+have the same type. For array types, {\bnf <location>} and {\bnf
+<expr>} must refer to a single array element which is also a scalar
+value.
+
+It is legal to assign to a formal parameter variable within a method
+body.  Such assignments affect only the method scope.
+
+\subsection*{Method Invocation and Return}
+
+Method invocation involves (1) passing argument values from the caller
+to the callee, (2) executing the body of the callee, and (3) returning
+to the caller, possibly with a result.
+
+Argument passing is defined in terms of assignment: the formal arguments
+of a method are considered to be like local variables of the method and
+are initialized, by assignment, to the values resulting from the
+evaluation of the argument expressions.  The arguments are evaluated
+from left to right.
+
+The body of the callee is then executed by executing the statements of
+its method body in sequence.
+
+A method that has no declared result type can only be called as a
+statement, {\em i.e.}, it cannot be used in an expression.  Such a
+method returns control to the caller when \kw{return} is called (no
+result expression is allowed) or when the textual end of the callee is
+reached.
+
+A method that returns a result may be called as part of an expression,
+in which case the result of the call is the result of evaluating the
+expression in the \kw{return} statement when this statement is reached.
+It is illegal for control to reach the textual end of a method that
+returns a result.
+
+A method that returns a result may also be called as a statement.  In
+this case, the result is ignored.
+
+\subsection*{Control Statements}
+
+\subsubsection*{\kw{if}}
+The \kw{if} statement has the usual semantics.  First, the {\bnf <expr>}
+is evaluated.  If the result is \kw{true}, the \kw{true} arm is
+executed.  Otherwise, the \kw{else} arm is executed, if it exists.
+Since Decaf requires that the \kw{true} and \kw{else} arms
+be enclosed in braces, there is no ambiguity in matching an \kw{else}
+arm with its corresponding \kw{if} statement.
+
+% The \kw{while} statement has the usual semantics.  First, the {\bnf
+% <expr>} is evaluated.  If the result is \kw{false}, control exits the
+% loop.  Otherwise, the loop body is executed.  If control reaches the end
+% of the loop body, the \kw{while} statement is executed again.
+
+\subsubsection*{\kw{for}}
+The \kw{for} statement is similar to a {\kw do} loop in Fortran.  The
+{\bnf <id>} is the loop index variable and it shadows a variable of
+the same name declared in an outer scope if one exists.  The loop
+index variable declares an integer variable whose scope is limited to
+the body of the loop.   The first {\bnf<expr>} is the initial value
+of the loop index variable and the second {\bnf<expr>} is the ending
+value of the loop index variable.  Each of these expressions are
+evaluated once, just prior to reaching the loop for the first time.
+Each expression must evaluate to an integer value.
+The loop body is executed if the current value of the index variable
+is less than the ending value.  After an execution of the
+loop body, the index variable in incremented by 1, and the new value
+is compared to the ending value to decide if another iteration should
+execute.
+
+\subsection*{Expressions}
+
+Expressions follow the normal rules for evaluation.  In the absence of
+other constraints, operators with the same precedence are evaluated from
+left to right.  Parentheses may be used to override normal precedence.
+
+A location expression evaluates to the value contained by the location.
+
+Method invocation expressions are discussed in {\em Method Invocation
+and Return}.  Array operations are discussed in {\em Types}.  I/O
+related expressions are discussed in {\em Library Callouts}.
+
+Integer literals evaluate to their integer value.  Character literals
+evaluate to their integer ASCII values, \eg\ \term{'A'} represents the
+integer 65.  (The type of a character literal is \kw{int}.)
+
+The arithmetic operators ({\bnf <arith_op>} and unary minus) have
+their usual precedence and meaning, as do the relational operators
+({\bnf <rel_op>}).  {\tt \%} computes the remainder of dividing its
+operands. 
+
+%The {\tt <<} is a left shift and the {\tt >>} is an
+%arithmetic right shift.
+
+Relational operators are used to compare integer expressions.  The
+equality operators, \term{==} and \term{!=} are defined for \kw{int}
+and \kw{boolean} types only, can be used to compare any two
+expressions having the same type.  (\term{==} is ``equal'' and
+\term{!=} is ``not equal'').
+
+The result of a relational operator or equality operator has type
+\kw{boolean}.
+
+The boolean connectives \term{\&\&} and \term{||} are interpreted using
+short circuit evaluation as in Java.  The side-effects of the second
+operand are not executed if the result of the first operand determines
+the value of the whole expression (i.e., if the result is false for
+\term{\&\&} or true for \term{||}).
+
+Operator precedence, from highest to lowest:
+
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+{\em Operators\/}  & {\em Comments\/} \\
+\hline
+\term{-}              & unary minus \\
+\term{!}              & logical not \\
+\term{* / \%}         & multiplication, division, remainder \\
+\term{+ -}            & addition, subtraction \\
+%\term{<< >>}          & shifts\\
+\term{<  <=   >=  >}  & relational \\
+\term{==  !=}         &  equality \\
+\term{\&\&}           & conditional and \\
+\term{||}             & conditional or \\ \hline
+\end{tabular}
+\end{center}
+
+Note that this precedence is not reflected in the reference grammar.
+
+\subsection*{Library Callouts}
+
+Decaf includes a primitive method for calling functions
+provided in the runtime system, such as the standard C library or
+user-defined functions.
+
+The primitive method for calling functions is:
+
+\begin{quotation}
+\noindent \kw{int} \kw{callout} ({\bnf <string_literal>,
+O[L[<callout_arg>][T[,]]]} ) --- the function named by the initial
+string literal is called and the arguments supplied are passed to
+it. Expressions of boolean or integer type are passed as integers;
+string literals or expressions with array type are passed as
+pointers. The return value of the function is passed back as an
+integer. The user of \kw{callout} is responsible for ensuring that the
+arguments given match the signature of the function, and that the return
+value is only used if the underlying library function actually returns a
+value of appropriate type. Arguments are passed to the function in the
+system's standard calling convention.
+\end{quotation}
+
+In addition to accessing the standard C library using \kw{callout}, an
+I/O function can be written in C (or any other language), compiled using
+standard tools, linked with the runtime system, and accessed by the
+\kw{callout} mechanism.
+
+\input{rules-decaf}
+
+\section*{Run Time Checking}
+
+In addition to the constraints described above, which are statically
+enforced by the compiler's semantic checker, the following constraints
+are enforced dynamically: the compiler's code generator must emit
+code to perform these checks; violations are discovered at run-time.
+
+\begin{enumerate}
+\item The subscript of an array must be in bounds.
+\item Control must not fall off the end of a method that is declared to
+      return a result.
+\end{enumerate}
+
+When a run-time error occurs, an appropriate error message is output to
+the terminal and the program terminates.  Such error messages should be
+helpful to the programmer trying to find the problem in the source
+program.
+
+\end{document}

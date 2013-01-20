@@ -1,0 +1,185 @@
+\documentstyle[11pt,6035]{article}
+
+\begin{document}
+
+\handout{Handout --- Athena, Tools}{\CLASSONE}
+
+This document describes what you will need to know about Athena and
+Java tools for 6.035.
+
+\subsection*{Athena clusters}
+
+If you don't have an account on Athena, you should register for one
+immediately.  Information can be found at {\tt http://ist.mit.edu/services/athena}
+
+You can work in any of the public Athena clusters.  Type {\tt cview} to see a
+list of clusters and available machines.
+
+\subsection*{Communication}
+
+We'll make course announcements via electronic mail.  If you don't
+receive a message welcoming you to the class mailing list within a
+week, tell the TA immediately.
+
+We'll answer questions via email.  You can mail your TA directly
+or use {\tt 6.035-staff@mit.edu} to reach the entire staff.
+
+\subsection*{Finding course files}
+
+Handouts will be available on the course web site.  Project
+directories, examples, and 6.035 programs are stored in {\tt
+/mit/6.035}.  The Java compiler, library, debugger, and associated
+programs and documentation are stored in the Java locker {\tt
+/mit/java}.
+
+You'll probably want to add these lines to your {\tt .environment} file:
+\begin{verbatim}
+  add -f java
+  add -f git
+\end{verbatim}
+
+These commands attach the lockers and update your execution path
+to include the course software.
+
+If you need to use different versions of java for other classes you
+can use the -ver switch.
+\begin{verbatim}
+    java -ver 1.6.0_23  .....
+    javac -ver 1.6.0_23 .....
+    etc.
+\end{verbatim} 
+Note that the -ver must come before any other command line arguments.
+
+\subsection*{Working with Groups}
+
+The first project should be done individually.  When the second project is
+assigned, the class will be partitioned into groups of 3 or 4 students.
+
+Each group will be given a group locker that can be used to work on
+the project.  There should be enough space in these lockers that you
+won't have any problems.  Only group members and 6.035 staff will
+be able to access each group locker.
+
+\subsection*{Java Compiler}
+
+We'll be using Sun's JDK 1.6.0. It is available on the Sun
+and Linux Athena platforms.  You can get a free version of the JDK
+from Sun's web site for other platforms (Windows, Mac).  However, the
+only officially supported platforms for this class are Sun and Linux,
+so we may not be able to help you if you run into problems with other
+platforms.  Since Java is platform independent, you can compile your
+final bytecodes on any platform.
+
+Below we describe basic operation of JDK 1.6.0.  For detailed
+information on JDK and Java API 1.6.0, consult {\tt
+http://java.sun.com/}.
+
+\subsubsection*{Running JDK 1.6.0}
+
+Compile the source file(s) using the Java compiler. Use the {\tt -g}
+flag to create debuggable bytecodes.
+
+\begin{verbatim}
+  % javac dummy1.java dummy2.java
+\end{verbatim}
+
+If compilation succeeds, the compiler creates a {\tt .class} file
+(named {\it ClassName}{\tt.class}) for each public class defined.  If
+compilation fails, the compiler lists compilation errors.
+
+You must have no more than one public class defined in each of the
+source files, and the filename must be {\em exactly} the same as the
+class name.  You can define several private classes in one file,
+however the compiler will still generate a separate {\tt .class} file
+for each class.
+
+In 6.035 we'll be writing Java applications (not applets).  Each Java
+application must have a public class that contains a {\tt public static
+void main(String[] args)} method. To run the program simply type
+
+\begin{verbatim}
+  % java MyProgram arg1 arg2 arg3
+\end{verbatim}
+
+where MyProgram is the name of the class with the {\tt main} method,
+and {\tt arg1, arg2, arg3} are the command line arguments. These
+arguments are passed to the program in the {\tt args} parameter to the
+{\tt main} method, and can be accessed as {\tt args[0], args[1]}, etc.
+
+\subsubsection*{Java Debugger}
+
+If you use the {\tt -g} flag when you compile your source code, you
+will be able to debug your program using the JDK debugger. Start the
+debugger using:
+
+\begin{verbatim}
+  % java -debug MyClass
+\end{verbatim}
+
+Once inside the debugger, {\tt help} will list all available commands.
+Here is a very limited list of the most useful:
+\begin{itemize}
+\item {\tt run $<$class$>$ [args]} --- Start execution of a loaded Java class
+\item {\tt print $<$id$>$ [id(s)]} --- Print object or field 
+\item {\tt stop in $<$class id$>$.$<$method$>$} --- Set a breakpoint in a $<$method$>$
+\item {\tt cont} --- Continue execution to the next break point.
+\item {\tt locals} --- Print all local variables in current stack frame
+\item {\tt help} --- Displays the list of recognized commands with descriptions 
+\end{itemize}
+
+\subsection*{Ant}
+
+You are required to use {\tt Apache Ant} to build your projects, and
+to provide a {\tt build.xml} the TA can use to create bytecodes from
+your source files.  Ant is a java-based build tool that strives to be
+platform independent.  Ant is much like the familiar {\tt Make} tools
+in that it resolves the dependencies necessary to perform a task.
+However, Ant is not shell-based.  Project configuration files are
+written in hierarchical xml and Ant is extended by implementing java
+classes.  Please visit {\tt http://ant.apache.org/} for more
+information on Ant.  The handout describing the Scanner and Parser
+phase of the project will include a more detailed description of the
+build system.
+
+% Unfortunately,
+% the current configuration of Ant and Java on Athena is somewhat
+% inconsistant, and by default Ant uses JDK 1.6. This means that when
+% you run your program using {\tt java -jar Compiler.jar ...},
+% you may receive an error message: {\tt Bad version number}. To fix
+% this, you may want to set {\tt JAVA\_HOME} environment variable to
+% {\tt /afs/athena.mit.edu/software/java\_v1.5.0\_06/}. This will let
+% Ant know where to find the correct version of Java.
+
+\subsection*{Revision Control}
+
+You should use revision control on your projects to help manage changes to
+your source code base. You'll be writing a lot of code for 6.035, and for
+many of you this will be the first time you'll be working on a project of
+sufficient complexity to require source control.
+
+We recommend {\tt git} for revision control.  Although the choice of other
+system (such as svn, bzr, or mercurial) is left up to each group.
+
+More information on git can be found here: {\tt
+http://git-scm.com/documentation}
+
+It can be found in the git locker on athena: {\tt add -f git}
+
+% There is an online manual available at {\tt
+% http://ximbiot.com/cvs/manual/}, as well as lots of information on
+% the man page ({\tt man cvs}).  You'll need to
+% understand the concepts of creating a repository ({\tt cvs init}),
+% checking out a working copy of your source tree ({\tt cvs co}),
+% checking in changes ({\tt cvs commit}), getting diffs and logs ({\tt
+% cvs diff} and {\tt cvs log}), and updating your working directory
+% ({\tt cvs update}).  You may also find tagging and branching useful.
+% CVS also supports remote repositories (using SSH) that make it much
+% easier for group members to work from home.
+
+% CVS is in the GNU locker on athena: {\tt add gnu}
+
+% Note: If you would like to use remote CVS, the TA has found that {\tt
+%   ant.mit.edu} is currently the most reliable server for your
+% connection.
+
+\end{document}
