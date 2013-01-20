@@ -22,11 +22,8 @@ different names referring to two distinct variables.
 The reserved words are:
 
 
-\kw{boolean break callout class continue else false for
+\kw{boolean break callout continue else false for
   if int return true void}
-
-Note that \kw{Program} (see below) is not a keyword, but an identifier
-with a special meaning in certain circumstances.
 
 Comments are started by {\tt //} and are terminated by the end of the
 line.
@@ -87,7 +84,9 @@ Meta-notation:
 \end{center}}
 
 \begin{bnfgrammar}
-<program> -> K[class] K[Program] T[~$'$\{$'$~] R[<field_decl>] R[<method_decl>] T[~$'$\}$'$]
+<program> -> R[<callout_decl>] R[<field_decl>] R[<method_decl>] 
+
+<callout_decl> -> K[callout] <id> T[~~;]
 
 <field_decl> -> <type> L[G[<id> ! <id> T[~$'$\[$'$] <int_literal> T[$'$\]$'$~] ]][T[,]] T[~~;]
 
@@ -106,14 +105,13 @@ Meta-notation:
              | K[return] O[<expr>] T[~~;]
              | K[break] T[~~;]
              | K[continue] T[~~;]
-             | <block>
 
 <assign_op> -> T[=]
              | T[+=]
 	     | T[-=]	
 
 <method_call> -> <method_name> T[~(~] O[L[<expr>][T[,]]] T[~)~]
-        | K[callout] T[~(~] <string_literal> O[T[,] L[ <callout_arg>][T[,]]] T[~)~]
+        |        <method_name> T[~(~] O[L[<callout_arg>][T[,]]] T[~)~]
 
 <method_name> -> <id>
 
@@ -128,7 +126,7 @@ Meta-notation:
         | <literal>
         | <expr> <bin_op> <expr>
         | T[-] <expr>
-    | T[!] <expr>
+        | T[!] <expr>
         | T[(~] <expr> T[~)]
 
 <callout_arg> -> <expr> ! <string_literal>
