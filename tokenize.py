@@ -11,7 +11,7 @@ reserved_words = ['boolean', 'break', 'callout', 'class', 'continue', 'else', 'f
 
 # Newline is missing so that we preserve newlines
 white_space = [' ', '\n', '\t', """\\"""]
-separators = ['(', ')', '{', '}', '==', '!=', '>=', '!=', ';']
+separators = ['(', ')', '{', '}', '==', '!=', '>=', '!=', ',', ';']
 
 def tokenize_raw(code, buff):
     if not code:
@@ -72,10 +72,13 @@ def emit_code(tokens, indent, indent_required, disregard_newline):
     else:
         head = tokens[0].s
 
-    if head in ['for' or 'while']:
+    if head == 'for':
         disregard_newline = True
 
     indent_str = get_indent(indent) if indent_required else ' '
+
+    if head == ',':
+      indent_str = ''
 
     if head == ';':
         new_line = '' if disregard_newline else '\n'
