@@ -1,0 +1,14 @@
+class Program {
+  int i;
+  {
+  i = 10;
+  for (i = 0; i < 10; i ++) {
+    int x;
+    int y;
+    x + y;
+    }
+  }
+  while(i < 10) {
+    i++;
+    }
+}
