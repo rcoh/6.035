@@ -171,8 +171,7 @@ Meta-notation:
 \def\arraybool{\kw{array}\term{\[\kw{bool}\]}}
 \def\arrayT{\kw{array}\term{\[T\]}}
 
-A Decaf program consists of a single class declaration
-for a class called \kw{Program}. The class declaration consists of
+A Decaf program consists of a single program. A program consists of callout declarations,
 field declarations and method declarations.  Field declarations
 introduce variables that can be accessed globally by all methods in
 the program.  Method declarations introduce functions/procedures.  The
@@ -186,6 +185,7 @@ There are two basic types in Decaf --- \kw{int} and
 \kw{boolean}.  In addition, there are arrays of integers (\term{int \[
 $N$ \]}) and arrays of booleans (\term{boolean \[ $N$ \]}).
 
+%TODO: Arrays can be anywhere 
 Arrays may be declared only in the global (class declaration) scope.
 All arrays are one-dimensional and have a compile-time fixed size.
 Arrays are indexed from 0 to $N-1$, where $N > 0$ is the size of the
@@ -208,7 +208,7 @@ identifiers must be defined (textually) before use.  For example:
 There are at least two valid scopes at any point in a
 Decaf program: the global scope, and the method
 scope.  The global scope consists of names of fields and methods
-introduced in the (single) \kw{Program} class declaration.  The
+introduced in the (single) program declaration.  The
 method scope consists of names of variables and formal parameters
 introduced in a method declaration.  Additional local scopes exist within
 each \nt{block} in the code; these can come after \kw{if} or \kw{for}
@@ -230,6 +230,7 @@ each local scope.
 
 \subsection*{Locations}
 
+%TODO: array tweaks
 Decaf has two kinds of locations: local/global scalar
 variables and (global) array elements.  Each location has a type.
 Locations of types \kw{int} and \kw{boolean} contain integer values and
@@ -376,7 +377,6 @@ Operator precedence, from highest to lowest:
 \term{!}              & logical not \\
 \term{* / \%}         & multiplication, division, remainder \\
 \term{+ -}            & addition, subtraction \\
-%\term{<< >>}          & shifts\\
 \term{<  <=   >=  >}  & relational \\
 \term{==  !=}         &  equality \\
 \term{\&\&}           & conditional and \\
@@ -388,24 +388,26 @@ Note that this precedence is not reflected in the reference grammar.
 
 \subsection*{Library Callouts}
 
-Decaf includes a primitive method for calling functions
-provided in the runtime system, such as the standard C library or
-user-defined functions.
+Decaf includes a method for calling library callouts similar to the c language. Callouts must be predeclared at the top
+of the file. The synax (as specified in the grammar) is:
 
-The primitive method for calling functions is:
+{\bnf  K[callout] <id> T[~~;] }
+
+All callout functions must return \kw{int}. Once callouts have been declared, they may be called identically to any
+function. The one exception is that arguments to callouts may contain string literals (\textbf{This is the only use of
+the string literal in the decaf language}). Normal decaf methods may not contain string literals as arguments. More
+details about the semantics of callout follow:
 
 \begin{quotation}
-\noindent \kw{int} \kw{callout} ({\bnf <string_literal>,
-O[L[<callout_arg>][T[,]]]} ) --- the function named by the initial
-string literal is called and the arguments supplied are passed to
-it. Expressions of boolean or integer type are passed as integers;
+Expressions of boolean or integer type are passed as integers;
 string literals or expressions with array type are passed as
 pointers. The return value of the function is passed back as an
-integer. The user of \kw{callout} is responsible for ensuring that the
+integer. The user of a \kw{callout} is responsible for ensuring that the
 arguments given match the signature of the function, and that the return
 value is only used if the underlying library function actually returns a
 value of appropriate type. Arguments are passed to the function in the
-system's standard calling convention.
+system's standard calling convention. \textbf{The compiler is not responsible for verifying that callouts have the
+correct number or type of arguments.}
 \end{quotation}
 
 In addition to accessing the standard C library using \kw{callout}, an

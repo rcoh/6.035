@@ -21,11 +21,12 @@ each illegal program, but will generate no errors for a legal program.
       executed).
 \item The {\bnf <int_literal>} in an array declaration must be greater
       than 0.
-\item The number and types of arguments in a method call must be the same
+\item The number and types of arguments in a method call (non-callout) must be the same
       as the number and types of the formals, i.e., the signatures
 must be identical.
 \item If a method call is used as an expression, the method must
       return a result.
+\item String literals may not be used as arguments to non-callout methods.
 \item A \kw{return} statement must not have a return value unless it appears
       in the body of a method that is declared to return a value.
 \item The expression in a \kw{return} statement must have the same type as
