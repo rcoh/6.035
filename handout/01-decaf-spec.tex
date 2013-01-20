@@ -92,9 +92,9 @@ Meta-notation:
 
 <method_decl> -> G[<type> ! K[void]] <id> T[~(~] O[L[G[<type> <id>]][T[,]]] T[~)~] <block>
 
-<block> -> T[$'$\{$'$~] R[<var_decl>]  R[<statement>] T[~$'$\}$'$]
+<block> -> T[$'$\{$'$~] R[<field_decl>]  R[<statement>] T[~$'$\}$'$]
 
-<var_decl> -> <type> L[<id>][T[,]] T[~~;]
+%<var_decl> -> <type> L[<id>][T[,]] T[~~;]
 
 <type> -> K[int] ! K[boolean]
 
@@ -185,8 +185,7 @@ There are two basic types in Decaf --- \kw{int} and
 \kw{boolean}.  In addition, there are arrays of integers (\term{int \[
 $N$ \]}) and arrays of booleans (\term{boolean \[ $N$ \]}).
 
-%TODO: Arrays can be anywhere 
-Arrays may be declared only in the global (class declaration) scope.
+Arrays may be declared in any scope.
 All arrays are one-dimensional and have a compile-time fixed size.
 Arrays are indexed from 0 to $N-1$, where $N > 0$ is the size of the
 array.  The usual bracket notation is used to index arrays.  Since
@@ -230,20 +229,22 @@ each local scope.
 
 \subsection*{Locations}
 
-%TODO: array tweaks
 Decaf has two kinds of locations: local/global scalar
-variables and (global) array elements.  Each location has a type.
+variables and local/global array elements.  Each location has a type.
 Locations of types \kw{int} and \kw{boolean} contain integer values and
 boolean values, respectively.  Locations of types \term{int \[ $N$ \]}
 and \term{boolean \[ $N$ \]} denote array elements.  Since arrays are
 statically sized in Decaf, arrays may be allocated in the
-static data space of a program and need not be allocated on the heap.
+static data space of a program and need not be allocated on the heap. 
+Local arrays may be dynamically allocated on the stack or statically 
+allocated on the heap.
 
 Each location is initialized to a default value when it is declared.
 Integers have a default value of zero, and booleans have a default
 value of \kw{false}.  Local variables must be initialized when the
-declaring scope is entered.  Array elements are initialized when the
-program starts.
+declaring scope is entered.  Global array elements are initialized when the
+program starts. Local array elements are initialized when an array enters scope.
+Each time an array newly enters scope, its values must be reset to their defaults.
 
 \subsection*{Assignment}
 
