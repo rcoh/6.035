@@ -3,6 +3,7 @@ import re
 ReservedWord = collections.namedtuple('ReservedWord', 's')
 Identifier = collections.namedtuple('Identifier', 's')
 Separator = collections.namedtuple('Separator', 's')
+Comment = collections.namedtuple('Comment', 's')
 # No reason to handle ints, etc.
 Unknown = collections.namedtuple('Unknown', 's')
 
@@ -10,8 +11,9 @@ reserved_words = ['boolean', 'break', 'callout', 'class', 'continue', 'else', 'f
 'true', 'void']
 
 # Newline is missing so that we preserve newlines
-white_space = [' ', '\n', '\t', """\\"""]
+white_space = [' ', '\n', '\t']
 separators = ['(', ')', '{', '}', '==', '!=', '>=', '!=', ',', ';']
+comment_start = '//'
 
 def tokenize_raw(code, buff):
     if not code:
@@ -20,6 +22,13 @@ def tokenize_raw(code, buff):
         return [buff] + tokenize_raw(code[1:], '')
     elif code[0] in separators:
         return [buff] + [code[0]]+ tokenize_raw(code[1:], '')
+    elif code.startswith(comment_start):
+        if len(code.split('\n', 1)) == 2:
+            (comment, new_code) = code.split('\n', 1)
+        else:
+            comment = code
+            new_code = ''
+        return [comment] + tokenize_raw(new_code, '')
     else:
         return tokenize_raw(code[1:], buff + code[0])
 
@@ -42,6 +51,8 @@ def process(buff):
         return Identifier(buff)
     elif re.match('\(|\)|{|}', buff):
         return Separator(buff)
+    elif buff.startswith('//'):
+        return Comment(buff)
     else:
         return Unknown(buff)
 
@@ -87,6 +98,8 @@ def emit_code(tokens, indent, indent_required, disregard_newline):
         return indent_str + '{\n' + emit_code(tokens[1:], indent + 1, True, False)
     elif head == '}':
         return get_indent(indent -1) + '}\n' + emit_code(tokens[1:], indent -1, True, False)
+    elif head.startswith('//'):
+        return indent_str + head + '\n' + emit_code(tokens[1:], indent, False, False)
     else:
         return indent_str + head + emit_code(tokens[1:], indent, False, disregard_newline)
         
