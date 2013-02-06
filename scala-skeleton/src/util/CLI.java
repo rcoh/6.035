@@ -1,4 +1,3 @@
-
 package util;
 
 import java.util.Vector;
@@ -26,7 +25,7 @@ public class CLI {
    * CFG: produce an image of the control flow graph
    * ASSEMBLY: produce assembly from the input.
    */
-  public enum Action {DEFAULT, SCAN, PARSE, INTER, MIDIR, LOWIR, CFG, ASSEMBLY};
+  public enum Action {DEFAULT, SCAN, PARSE, INTER, LOWIR, CFG, ASSEMBLY};
 
   /**
    * Array indicating which optimizations should be performed.  If
@@ -152,8 +151,6 @@ public class CLI {
           target = Action.PARSE;
         } else if (argSansCase.equals("inter")) {
           target = Action.INTER;
-        } else if (argSansCase.equals("midir")) {
-          target = Action.MIDIR;
         } else if (argSansCase.equals("lowir")) {
           target = Action.LOWIR;
         } else if (argSansCase.equals("assembly") ||
