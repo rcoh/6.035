@@ -21,7 +21,7 @@ def rewrite_callouts_int(tokens, emmited_callouts):
     else:
         if tokens[0].s == 'callout':
             (callout, lparen, func_name) = tokens[0:3]
-            func_name = Unknown(func_name.s.strip("'"))
+            func_name = Unknown(func_name.s.strip('"'))
             emmited_callouts.add(func_name.s)
             return [func_name, lparen] + rewrite_callouts_int(tokens[4:], emmited_callouts)
         else:
