@@ -1,3 +1,4 @@
+import sys
 from tokenize import tokenize, Separator, emit_code, Unknown
 
 def remove_class(tokens):
@@ -41,8 +42,9 @@ def translate(code):
 def translate_file(name):
     with open(name) as f:
         new_code = translate(f.read())
-        with file('trans'+name, 'w') as n:
-            n.write(new_code)
+        print new_code
+#        with file('trans'+name, 'w') as n:
+#            n.write(new_code)
 
 def identity(name):
     with open(name) as f:
@@ -52,5 +54,5 @@ def identity(name):
 
 
 
-#translate_file('test.dcf')
-translate_file('callouts.dcf')
+if __name__ == "__main__":
+    translate_file(sys.argv[1])
